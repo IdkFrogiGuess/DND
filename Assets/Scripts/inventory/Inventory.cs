@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour
 {
@@ -11,9 +12,15 @@ public class Inventory : MonoBehaviour
     public GameObject hotBarObj;
     public GameObject inventorySlotparent;
 
+    public Image dragIcon;
+
     private List<Slot> inventorySlots = new List<Slot>();
     private List<Slot> hotBarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
+
+    private Slot draggedSlot = null;
+    private bool isDragging = false;
+
 
     private void Awake()
     {
@@ -28,17 +35,17 @@ public class Inventory : MonoBehaviour
         AddItem(woodItem, 3);
     }
 
-        void Update()
-        {
-            
-        }
+    void Update()
+    {
+
+    }
     public void AddItem(ItemSO itemToAdd, int amount)
     {
         int remaining = amount;
 
         foreach (Slot slot in allSlots)
         {
-            if(slot.hasItem() && slot.GetItem() == itemToAdd)
+            if (slot.hasItem() && slot.GetItem() == itemToAdd)
             {
                 int currentAmount = slot.GetAmount();
                 int maxStack = itemToAdd.maxStackSize;
@@ -51,14 +58,14 @@ public class Inventory : MonoBehaviour
                     slot.SetItem(itemToAdd, currentAmount + amountToAdd);
                     remaining -= amountToAdd;
 
-                    if(remaining <= 0)
+                    if (remaining <= 0)
                         return;
 
                 }
 
             }
         }
-        foreach(Slot slot in allSlots)
+        foreach (Slot slot in allSlots)
         {
             if (!slot.hasItem())
             {
@@ -69,11 +76,54 @@ public class Inventory : MonoBehaviour
                 if (remaining <= 0)
                     return;
 
-                if(remaining > 0)
+                if (remaining > 0)
                 {
                     Debug.LogWarning("Inventory is full, cant add" + remaining + "of" + itemToAdd.itemName);
                 }
             }
         }
     }
+
+    public void StartDrag(InputAction.CallbackContext context)
+    {
+        Slot hovered = GetHoveredSlot();
+        if (hovered != null && hovered.hasItem())
+        {
+            draggedSlot = hovered;
+            isDragging = true;
+            dragIcon.enabled = true;
+
+            dragIcon.sprite = hovered.GetItem().itemIcon;
+            dragIcon.color = new Color(1, 1, 1, 0.5f);
+        }
+    }
+
+   // public void EndDrag(InputAction.CallbackContext context)
+   // {
+   //     Slot slot = GetHoveredSlot();
+
+    //    if(hovered != null)
+//{
+     //       HandleDrop(draggedSlot, hovered);
+
+    //        dragIcon.enabled = false;
+  //      }
+        
+ //   }
+
+    private Slot GetHoveredSlot()
+    {
+        foreach (Slot s in allSlots)
+        {
+            if (s.hovering)
+            {
+                return s;
+            }
+        }
+        return null;
+    }
 }
+
+
+
+
